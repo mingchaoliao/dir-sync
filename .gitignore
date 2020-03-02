@@ -3,3 +3,6 @@ service-account-key.json
 tmp/
 *.egg-info/
 **/__pycache__/
+dist/
+build/
+.pytest_cache/

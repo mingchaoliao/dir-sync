@@ -3,5 +3,7 @@ version: '3.2'
 services:
   app:
     build: .
+    environment:
+      CONVERT_README: true
     volumes:
       - .:/app

@@ -4,3 +4,5 @@ google-auth-oauthlib
 pytest
 pytest-mock
 setuptools_scm
+twine
+pypandoc
