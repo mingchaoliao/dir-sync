@@ -24,7 +24,6 @@ class GoogleDrive:
             A Google Drive Service authenticated from the service account key file.
         """
         credentials = service_account.Credentials.from_service_account_file(service_account_key_file)
-        print(credentials)
         drive = build('drive', 'v3', credentials=credentials)
         return GoogleDrive(drive)
 

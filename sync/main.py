@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from os.path import join
+from os.path import join, dirname
 from typing import List
 
 from setuptools_scm import get_version
@@ -15,7 +15,7 @@ def main():
         prog='Google Drive Sync'
     )
     parser.add_argument('--version', help='Print version of this program.', action='version',
-                        version='Version: {}'.format(get_version()))
+                        version='Version: {}'.format(get_version(relative_to=dirname(__file__))))
     parser.add_argument('--src-type', required=True, help='Source type.', choices=['google-drive'])
     parser.add_argument('--dst-type', required=True, help='Destination type.', choices=['local'])
     parser.add_argument('--src', required=True, help='Source directory path. The value depends on the source type.')
