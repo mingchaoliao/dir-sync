@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 from os.path import join
 from typing import List
 
+from setuptools_scm import get_version
+
 from sync.google_drive import GoogleDrive
 from sync.local_fs import LocalFS
 
@@ -9,12 +11,17 @@ from sync.local_fs import LocalFS
 def main():
     # command setup
     parser = ArgumentParser(
-        description='Sync files in the local folder with files in the Google Drive folder',
+        description='Sync files in the local folder with files in the remote location, e.g. Google Drive.',
         prog='Google Drive Sync'
     )
-    parser.add_argument('--src', required=True, help='Google Drive Folder ID')
-    parser.add_argument('--dst', required=True, help='Local directory path')
-    parser.add_argument('--auth-key-file', required=True, help='Google Service Account key file path')
+    parser.add_argument('--version', help='Print version of this program.', action='version',
+                        version='Version: {}'.format(get_version()))
+    parser.add_argument('--src-type', required=True, help='Source type.', choices=['google-drive'])
+    parser.add_argument('--dst-type', required=True, help='Destination type.', choices=['local'])
+    parser.add_argument('--src', required=True, help='Source directory path. The value depends on the source type.')
+    parser.add_argument('--dst', required=True,
+                        help='Destination directory path. The value depends on the source type.')
+    parser.add_argument('--auth-key-file', required=True, help='Path to auth key file.')
     args = vars(parser.parse_args())
 
     # local file system
