@@ -1,5 +1,5 @@
 from hashlib import md5
-from os import DirEntry, scandir, path, mkdir, remove, rename
+from os import DirEntry, scandir, path, mkdir, remove, rename, rmdir
 from typing import List, Dict, Callable, BinaryIO
 
 
@@ -112,3 +112,14 @@ class LocalFS:
         except Exception:
             if path.exists(tmp_file_path):
                 remove(tmp_file_path)
+
+    def delete_file(self, file_path: str):
+        """Delete file/directory at specified location.
+
+          Args:
+            file_path: string, path to the file/directory.
+        """
+        if path.isdir(file_path):
+            rmdir(file_path)
+        elif path.isfile(file_path):
+            remove(file_path)
