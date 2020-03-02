@@ -4,6 +4,6 @@ services:
   app:
     build: .
     environment:
-      CONVERT_README: true
+      CONVERT_README: 1
     volumes:
       - .:/app
