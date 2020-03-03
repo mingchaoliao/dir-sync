@@ -5,6 +5,7 @@ from typing.io import BinaryIO
 
 from sync.filesystem import Filesystem
 from sync.local.local_list_file_response import LocalListFileResponse
+from sync.local.utils import Utils
 
 
 class LocalFilesystem(Filesystem):
@@ -21,6 +22,15 @@ class LocalFilesystem(Filesystem):
             while byte:
                 fh.write(byte)
                 byte = read_fh.read()
+
+    def has_file(self, file_path: str, md5_checksum: str) -> bool:
+        if not path.isfile(file_path):
+            return False
+
+        if md5_checksum != Utils.cal_md5_checksum(file_path):
+            return False
+
+        return True
 
     def create_file(self, file_path: str, downloader: Callable[[BinaryIO], None]):
         base_dir, filename = path.split(file_path)

@@ -44,8 +44,11 @@ class GoogleDriveFilesystem(Filesystem):
         while done is False:
             status, done = downloader.next_chunk()
 
+    def has_file(self, file_path: str, md5_checksum: str) -> bool:
+        raise Exception('Unimplemented method')  # TODO: Implement this method
+
     def create_file(self, file_path: str, downloader: Callable[[BinaryIO], None]):
-        pass  # TODO: Implement this method
+        raise Exception('Unimplemented method')  # TODO: Implement this method
 
     def delete_file(self, file_id: str) -> None:
-        pass  # TODO: Implement this method
+        raise Exception('Unimplemented method')  # TODO: Implement this method

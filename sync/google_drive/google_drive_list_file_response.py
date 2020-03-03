@@ -1,4 +1,5 @@
-from typing import Tuple, List
+from os import path
+from typing import List
 
 from googleapiclient.discovery import Resource
 
@@ -16,7 +17,10 @@ class GoogleDriveListFileResponse(ListFileResponse):
         self.requests = requests
         self.google_drive_service = google_drive_service
 
-    def get_files(self) -> Tuple[FileCollection, 'ListFileResponse']:
+    def next(self) -> FileCollection or None:
+        if len(self.requests) == 0:
+            return None
+
         files = FileCollection()
         requests: List[GoogleDriveListFileRequest] = []
         request = self.requests.pop()
@@ -31,15 +35,23 @@ class GoogleDriveListFileResponse(ListFileResponse):
             if file_data['mimeType'] != 'application/vnd.google-apps.folder':
                 files.push(GoogleDriveFile(
                     file_data['id'],
-                    file_data['path'],
+                    path.join(request.base_directory, file_data['name']),
                     file_data['name'],
                     file_data['mimeType'],
                     file_data['md5Checksum'] if 'md5Checksum' in file_data else None
                 ))
             else:
-                requests.append(GoogleDriveListFileRequest(file_data['id']))
+                requests.append(GoogleDriveListFileRequest(
+                    file_data['id'],
+                    path.join(request.base_directory, file_data['name'])
+                ))
 
         if 'nextPageToken' in res:
-            requests.append(GoogleDriveListFileRequest(request.directory_id, res['nextPageToken']))
+            requests.append(GoogleDriveListFileRequest(
+                request.directory_id,
+                request.base_directory,
+                res['nextPageToken']
+            ))
 
-        return files, GoogleDriveListFileResponse(self.google_drive_service, self.requests + requests)
+        self.requests = self.requests + requests
+        return files

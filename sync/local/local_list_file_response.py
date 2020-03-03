@@ -1,5 +1,5 @@
 from os import scandir, DirEntry
-from typing import Tuple, List
+from typing import List
 
 from sync.file_collection import FileCollection
 from sync.filesystem import ListFileResponse
@@ -12,7 +12,10 @@ class LocalListFileResponse(ListFileResponse):
     def __init__(self, dirs: List[str]):
         self.dirs = dirs
 
-    def get_files(self) -> Tuple[FileCollection, 'ListFileResponse']:
+    def next(self) -> FileCollection or None:
+        if len(self.dirs) == 0:
+            return None
+
         files = FileCollection()
         dirs = []
         scanned_files: List[DirEntry] = scandir(self.dirs.pop())
@@ -21,4 +24,5 @@ class LocalListFileResponse(ListFileResponse):
                 files.push(LocalFile(scanned_file.path))
             elif scanned_file.is_dir():
                 dirs.append(scanned_file.path)
-        return files, LocalListFileResponse(self.dirs + dirs)
+        self.dirs = self.dirs + dirs
+        return files

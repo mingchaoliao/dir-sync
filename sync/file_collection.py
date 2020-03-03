@@ -11,6 +11,9 @@ class FileCollection:
             files = []
         self.files = files
 
+    def __iter__(self):
+        return iter(self.files)
+
     def push(self, file: File):
         self.files.append(file)
 

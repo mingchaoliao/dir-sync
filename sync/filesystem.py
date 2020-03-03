@@ -8,7 +8,7 @@ from sync.file_collection import FileCollection
 
 class ListFileResponse(ABC):
     @abstractmethod
-    def get_files(self) -> Tuple[FileCollection, 'ListFileResponse']:
+    def next(self) -> FileCollection or None:
         pass
 
 
@@ -27,6 +27,10 @@ class Filesystem(ABC):
 
     @abstractmethod
     def delete_file(self, file_id: str) -> None:
+        pass
+
+    @abstractmethod
+    def has_file(self, file_path: str, md5_checksum: str) -> bool:
         pass
 
     @staticmethod
