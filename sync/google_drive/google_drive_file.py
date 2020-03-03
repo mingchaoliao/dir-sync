@@ -12,3 +12,10 @@ class GoogleDriveFile(File):
 
     def get_md5_checksum(self) -> str:
         return self.md5_checksum
+
+    def is_dir(self) -> bool:
+        return self.mime_type == 'application/vnd.google-apps.folder'
+
+    def get_relative_path(self, base_path: str) -> str:
+        return self.file_path
+

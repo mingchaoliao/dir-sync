@@ -1,7 +1,7 @@
-from os import path
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Tuple
 
 from sync.application_exception import ApplicationException
+from sync.file import File
 from sync.file_collection import FileCollection
 from sync.filesystem import Filesystem
 from sync.filesystem_factory import FilesystemFactory
@@ -17,22 +17,43 @@ class DirSyncService:
         src_fs = self.instantiate_filesystem(args['src_type'], args)
         dst_fs = self.instantiate_filesystem(args['dst_type'], args)
 
-        src_list_file_res = src_fs.list_files(args['src'])
-        while True:
-            src_files: FileCollection = src_list_file_res.next()
+        dir_pairs: List[Tuple[File, File]] = self.sync_dir(args['src'], args['dst'], src_fs, dst_fs)
 
-            if src_files is None:
+        while True:
+            if len(dir_pairs) == 0:
                 break
 
-            for src_file in src_files:
-                dst_file_path = path.join(args['dst'], src_file.file_path)
-                if not dst_fs.has_file(dst_file_path, src_file.get_md5_checksum()):
+            src_dir, dst_dir = dir_pairs.pop()
+
+            dir_pairs = dir_pairs + self.sync_dir(src_dir.file_id, dst_dir.file_id, src_fs, dst_fs)
+
+    def sync_dir(self,
+                 src_dir_path: str,
+                 dst_dir_path: str,
+                 src_fs: Filesystem,
+                 dst_fs: Filesystem) -> List[Tuple[File, File]]:
+        src_files: FileCollection = src_fs.list_files(src_dir_path).get_all()
+        dst_files_dict: Dict[str, File] = dst_fs.list_files(dst_dir_path).get_all().to_dict_by_file_name()
+
+        rtn: List[Tuple[File, File]] = []
+
+        for src_file in src_files:
+            src_file_name = src_file.file_name
+
+            if src_file.is_dir():
+                if src_file_name in dst_files_dict and dst_files_dict[src_file_name].is_dir():
+                    rtn.append((src_file, dst_files_dict[src_file_name]))
+                else:
+                    rtn.append((src_file, dst_fs.create_directory(dst_dir_path, src_file_name)))
+            else:
+                if src_file_name not in dst_files_dict \
+                        or dst_files_dict[src_file_name].get_md5_checksum() != src_file.get_md5_checksum():
                     dst_fs.create_file(
-                        dst_file_path,
+                        dst_dir_path,
+                        src_file_name,
                         lambda fh: src_fs.read_file(src_file.file_id, fh)
                     )
-
-        pass
+        return rtn
 
     def instantiate_filesystem(self, name: str, args: Dict) -> Filesystem:
         for filesystem_factory in self.filesystem_factories:

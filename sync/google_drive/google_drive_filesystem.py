@@ -5,6 +5,7 @@ from googleapiclient.discovery import Resource, build
 from googleapiclient.http import MediaIoBaseDownload
 from typing.io import BinaryIO
 
+from sync.file import File
 from sync.filesystem import ListFileResponse, Filesystem
 from sync.google_drive.google_drive_list_file_request import GoogleDriveListFileRequest
 from sync.google_drive.google_drive_list_file_response import GoogleDriveListFileResponse
@@ -34,8 +35,8 @@ class GoogleDriveFilesystem(Filesystem):
         google_drive_service = build('drive', 'v3', credentials=credentials)
         return GoogleDriveFilesystem(google_drive_service)
 
-    def list_files(self, file_id: str) -> ListFileResponse:
-        return GoogleDriveListFileResponse(self.drive_service, [GoogleDriveListFileRequest(file_id)])
+    def list_files(self, file_id: str, is_recursive: bool = False) -> ListFileResponse:
+        return GoogleDriveListFileResponse(self.drive_service, [GoogleDriveListFileRequest(file_id)], is_recursive)
 
     def read_file(self, file_id: str, fh: BinaryIO) -> None:
         req = self.drive_service.files().get_media(fileId=file_id)
@@ -47,7 +48,10 @@ class GoogleDriveFilesystem(Filesystem):
     def has_file(self, file_path: str, md5_checksum: str) -> bool:
         raise Exception('Unimplemented method')  # TODO: Implement this method
 
-    def create_file(self, file_path: str, downloader: Callable[[BinaryIO], None]):
+    def create_file(self, base_dir: str, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+        raise Exception('Unimplemented method')  # TODO: Implement this method
+
+    def create_directory(self, base_dir: str, dir_name: str) -> File:
         raise Exception('Unimplemented method')  # TODO: Implement this method
 
     def delete_file(self, file_id: str) -> None:

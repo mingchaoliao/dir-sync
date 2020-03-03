@@ -13,7 +13,11 @@ class GoogleDriveListFileResponse(ListFileResponse):
     requests: List[GoogleDriveListFileRequest] = []
     google_drive_service: Resource
 
-    def __init__(self, google_drive_service: Resource, requests: List[GoogleDriveListFileRequest]):
+    def __init__(self,
+                 google_drive_service: Resource,
+                 requests: List[GoogleDriveListFileRequest],
+                 is_recursive: bool = False):
+        super().__init__(is_recursive)
         self.requests = requests
         self.google_drive_service = google_drive_service
 
@@ -32,15 +36,14 @@ class GoogleDriveListFileResponse(ListFileResponse):
         ).execute()
 
         for file_data in res['files']:
-            if file_data['mimeType'] != 'application/vnd.google-apps.folder':
-                files.push(GoogleDriveFile(
-                    file_data['id'],
-                    path.join(request.base_directory, file_data['name']),
-                    file_data['name'],
-                    file_data['mimeType'],
-                    file_data['md5Checksum'] if 'md5Checksum' in file_data else None
-                ))
-            else:
+            files.push(GoogleDriveFile(
+                file_data['id'],
+                path.join(request.base_directory, file_data['name']),
+                file_data['name'],
+                file_data['mimeType'],
+                file_data['md5Checksum'] if 'md5Checksum' in file_data else None
+            ))
+            if file_data['mimeType'] == 'application/vnd.google-apps.folder' and self.is_recursive:
                 requests.append(GoogleDriveListFileRequest(
                     file_data['id'],
                     path.join(request.base_directory, file_data['name'])

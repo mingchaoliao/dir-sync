@@ -1,5 +1,6 @@
 from hashlib import md5
 
+
 class Utils:
     @staticmethod
     def cal_md5_checksum(file_path: str) -> str:

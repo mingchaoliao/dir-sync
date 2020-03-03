@@ -19,3 +19,11 @@ class File(ABC):
               A string representation of md5 checksum of the file.
         """
         pass
+
+    @abstractmethod
+    def is_dir(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_relative_path(self, base_path: str) -> str:
+        pass
