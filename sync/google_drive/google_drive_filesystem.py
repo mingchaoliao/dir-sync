@@ -1,12 +1,14 @@
+from os import path
 from typing import Callable
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from typing.io import BinaryIO
 
 from sync.file import File
 from sync.filesystem import ListFileResponse, Filesystem
+from sync.google_drive.google_drive_file import GoogleDriveFile
 from sync.google_drive.google_drive_list_file_request import GoogleDriveListFileRequest
 from sync.google_drive.google_drive_list_file_response import GoogleDriveListFileResponse
 
@@ -45,14 +47,44 @@ class GoogleDriveFilesystem(Filesystem):
         while done is False:
             status, done = downloader.next_chunk()
 
-    def has_file(self, file_path: str, md5_checksum: str) -> bool:
-        raise Exception('Unimplemented method')  # TODO: Implement this method
+    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+        file_metadata = {
+            'name': file_name,
+            'parents': [base_dir.file_id]
+        }
+        fh = BinaryIO()
+        downloader(fh)
+        res = self.drive_service.files().create(
+            body=file_metadata,
+            media_body=MediaIoBaseUpload(fh, resumable=True),
+            fields='id, mimeType, md5Checksum'
+        ).execute()
+        return GoogleDriveFile(
+            res.get('id'),
+            path.join(base_dir.file_path, file_name),
+            file_name,
+            res.get('mimeType'),
+            res.get('md5Checksum')
+        )
 
-    def create_file(self, base_dir: str, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
-        raise Exception('Unimplemented method')  # TODO: Implement this method
-
-    def create_directory(self, base_dir: str, dir_name: str) -> File:
-        raise Exception('Unimplemented method')  # TODO: Implement this method
+    def create_directory(self, base_dir: File, dir_name: str) -> File:
+        dir_mime = 'application/vnd.google-apps.folder'
+        file_metadata = {
+            'name': dir_name,
+            'mimeType': dir_mime,
+            'parents': [base_dir.file_id]
+        }
+        res = self.drive_service.files().create(body=file_metadata, fields='id').execute()
+        return GoogleDriveFile(
+            res.get('id'),
+            path.join(base_dir.file_path, dir_name),
+            dir_name,
+            dir_mime,
+            None
+        )
 
     def delete_file(self, file_id: str) -> None:
-        raise Exception('Unimplemented method')  # TODO: Implement this method
+        self.drive_service.files().delete(fileId=file_id).execute()
+
+    def get_root_dir(self, dir_path: str) -> File:
+        return GoogleDriveFile(dir_path, '.', 'root', 'application/vnd.google-apps.folder', None)

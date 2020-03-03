@@ -37,15 +37,19 @@ class Filesystem(ABC):
         pass
 
     @abstractmethod
-    def create_file(self, base_dir: str, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
         pass
 
     @abstractmethod
-    def create_directory(self, base_dir: str, dir_name: str) -> File:
+    def create_directory(self, base_dir: File, dir_name: str) -> File:
         pass
 
     @abstractmethod
     def delete_file(self, file_id: str) -> None:
+        pass
+
+    @abstractmethod
+    def get_root_dir(self, dir_path: str) -> File:
         pass
 
     @staticmethod

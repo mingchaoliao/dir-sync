@@ -24,9 +24,9 @@ class LocalFilesystem(Filesystem):
             for block in iter(lambda: read_fh.read(4096), b""):
                 fh.write(block)
 
-    def create_file(self, base_dir: str, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
-        file_path = path.join(base_dir, file_name)
-        tmp_file_path = path.join(base_dir, file_name + '.lock')
+    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+        file_path = path.join(base_dir.file_path, file_name)
+        tmp_file_path = path.join(base_dir.file_path, file_name + '.lock')
         try:
             with open(tmp_file_path, 'wb+') as fh:
                 downloader(fh)
@@ -37,8 +37,8 @@ class LocalFilesystem(Filesystem):
                 remove(tmp_file_path)
             raise ApplicationException('Unable to create file at {}'.format(file_path))
 
-    def create_directory(self, base_dir: str, dir_name: str) -> File:
-        dir_path = path.join(base_dir, dir_name)
+    def create_directory(self, base_dir: File, dir_name: str) -> File:
+        dir_path = path.join(base_dir.file_path, dir_name)
         mkdir(dir_path)
         return LocalFile(dir_path, True)
 
@@ -47,3 +47,6 @@ class LocalFilesystem(Filesystem):
             rmdir(file_id)
         elif path.isfile(file_id):
             remove(file_id)
+
+    def get_root_dir(self, dir_path: str) -> File:
+        return LocalFile(dir_path, True)

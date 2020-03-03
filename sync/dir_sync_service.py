@@ -17,7 +17,12 @@ class DirSyncService:
         src_fs = self.instantiate_filesystem(args['src_type'], args)
         dst_fs = self.instantiate_filesystem(args['dst_type'], args)
 
-        dir_pairs: List[Tuple[File, File]] = self.sync_dir(args['src'], args['dst'], src_fs, dst_fs)
+        dir_pairs: List[Tuple[File, File]] = self.sync_dir(
+            src_fs.get_root_dir(args['src']),
+            dst_fs.get_root_dir(args['dst']),
+            src_fs,
+            dst_fs
+        )
 
         while True:
             if len(dir_pairs) == 0:
@@ -25,15 +30,15 @@ class DirSyncService:
 
             src_dir, dst_dir = dir_pairs.pop()
 
-            dir_pairs = dir_pairs + self.sync_dir(src_dir.file_id, dst_dir.file_id, src_fs, dst_fs)
+            dir_pairs = dir_pairs + self.sync_dir(src_dir, dst_dir, src_fs, dst_fs)
 
     def sync_dir(self,
-                 src_dir_path: str,
-                 dst_dir_path: str,
+                 src_dir: File,
+                 dst_dir: File,
                  src_fs: Filesystem,
                  dst_fs: Filesystem) -> List[Tuple[File, File]]:
-        src_files: FileCollection = src_fs.list_files(src_dir_path).get_all()
-        dst_files_dict: Dict[str, File] = dst_fs.list_files(dst_dir_path).get_all().to_dict_by_file_name()
+        src_files: FileCollection = src_fs.list_files(src_dir.file_id).get_all()
+        dst_files_dict: Dict[str, File] = dst_fs.list_files(dst_dir.file_id).get_all().to_dict_by_file_name()
 
         rtn: List[Tuple[File, File]] = []
 
@@ -44,12 +49,12 @@ class DirSyncService:
                 if src_file_name in dst_files_dict and dst_files_dict[src_file_name].is_dir():
                     rtn.append((src_file, dst_files_dict[src_file_name]))
                 else:
-                    rtn.append((src_file, dst_fs.create_directory(dst_dir_path, src_file_name)))
+                    rtn.append((src_file, dst_fs.create_directory(dst_dir, src_file_name)))
             else:
                 if src_file_name not in dst_files_dict \
                         or dst_files_dict[src_file_name].get_md5_checksum() != src_file.get_md5_checksum():
                     dst_fs.create_file(
-                        dst_dir_path,
+                        dst_dir,
                         src_file_name,
                         lambda fh: src_fs.read_file(src_file.file_id, fh)
                     )
