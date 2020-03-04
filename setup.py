@@ -21,7 +21,7 @@ setup(
     author_email='mingchaoliao95@gmail.com',
     url='https://github.com/mingchaoliao/dir-sync',
     license='MIT',
-    packages=['sync'],
+    packages=['sync', 'sync.google_drive', 'sync.local'],
     zip_safe=False,
     install_requires=['google-api-python-client', 'google-auth-httplib2', 'google-auth-oauthlib'],
     python_requires='>=3.6',
