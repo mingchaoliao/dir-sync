@@ -1,3 +1,4 @@
+from os import remove, path
 from typing import Dict, List, Type, Tuple
 
 from sync.application_exception import ApplicationException
@@ -53,11 +54,10 @@ class DirSyncService:
             else:
                 if src_file_name not in dst_files_dict \
                         or dst_files_dict[src_file_name].get_md5_checksum() != src_file.get_md5_checksum():
-                    dst_fs.create_file(
-                        dst_dir,
-                        src_file_name,
-                        lambda fh: src_fs.read_file(src_file.file_id, fh)
-                    )
+                    tmp_file_path = src_fs.read_file(src_file.file_id)
+                    dst_fs.create_file(dst_dir, src_file_name, tmp_file_path)
+                    if path.isfile(tmp_file_path) and src_fs.get_filesystem_name() != 'local':
+                        remove(tmp_file_path)
         return rtn
 
     def instantiate_filesystem(self, name: str, args: Dict) -> Filesystem:

@@ -1,3 +1,5 @@
+import random
+import string
 from abc import ABC, abstractmethod
 from typing import Callable
 
@@ -33,11 +35,11 @@ class Filesystem(ABC):
         pass
 
     @abstractmethod
-    def read_file(self, file_id: str, fh: BinaryIO) -> None:
+    def read_file(self, file_id: str) -> str:
         pass
 
     @abstractmethod
-    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+    def create_file(self, base_dir: File, file_name: str, tmp_file_path: str) -> File:
         pass
 
     @abstractmethod
@@ -56,3 +58,11 @@ class Filesystem(ABC):
     @abstractmethod
     def get_filesystem_name() -> str:
         pass
+
+    def create_tmp_file(self, downloader: Callable[[BinaryIO], None]) -> str:
+        letters_and_digits = string.ascii_letters + string.digits
+        random_str = ''.join(random.choice(letters_and_digits) for i in range(16))
+        tmp_file_path = '/tmp/dir_sync_{}.lock'.format(random_str)
+        with open(tmp_file_path, 'wb+') as fh:
+            downloader(fh)
+        return tmp_file_path

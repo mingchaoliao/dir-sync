@@ -1,9 +1,8 @@
 from os import path
-from typing import Callable
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
-from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from typing.io import BinaryIO
 
 from sync.file import File
@@ -40,25 +39,28 @@ class GoogleDriveFilesystem(Filesystem):
     def list_files(self, file_id: str, is_recursive: bool = False) -> ListFileResponse:
         return GoogleDriveListFileResponse(self.drive_service, [GoogleDriveListFileRequest(file_id)], is_recursive)
 
-    def read_file(self, file_id: str, fh: BinaryIO) -> None:
-        req = self.drive_service.files().get_media(fileId=file_id)
-        downloader = MediaIoBaseDownload(fh, req)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
+    def read_file(self, file_id: str) -> str:
+        def download(fid: str, fh: BinaryIO):
+            req = self.drive_service.files().get_media(fileId=fid)
+            downloader = MediaIoBaseDownload(fh, req)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
 
-    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+        return self.create_tmp_file(lambda fh: download(file_id, fh))
+
+    def create_file(self, base_dir: File, file_name: str, tmp_file_path: str) -> File:
         file_metadata = {
             'name': file_name,
             'parents': [base_dir.file_id]
         }
-        fh = BinaryIO()
-        downloader(fh)
+
         res = self.drive_service.files().create(
             body=file_metadata,
-            media_body=MediaIoBaseUpload(fh, resumable=True),
+            media_body=MediaFileUpload(tmp_file_path, resumable=True),
             fields='id, mimeType, md5Checksum'
         ).execute()
+
         return GoogleDriveFile(
             res.get('id'),
             path.join(base_dir.file_path, file_name),

@@ -1,14 +1,10 @@
 from os import path, mkdir, rename, remove, rmdir
-from typing import Callable
 
-from typing.io import BinaryIO
-
-from sync.application_exception import ApplicationException
 from sync.file import File
 from sync.filesystem import Filesystem
+from shutil import move
 from sync.local.local_file import LocalFile
 from sync.local.local_list_file_response import LocalListFileResponse
-from sync.local.utils import Utils
 
 
 class LocalFilesystem(Filesystem):
@@ -19,23 +15,14 @@ class LocalFilesystem(Filesystem):
     def list_files(self, file_id: str, is_recursive: bool = False) -> LocalListFileResponse:
         return LocalListFileResponse([file_id], is_recursive)
 
-    def read_file(self, file_id: str, fh: BinaryIO) -> None:
-        with open(file_id, 'rb') as read_fh:
-            for block in iter(lambda: read_fh.read(4096), b""):
-                fh.write(block)
+    def read_file(self, file_id: str) -> str:
+        return file_id
 
-    def create_file(self, base_dir: File, file_name: str, downloader: Callable[[BinaryIO], None]) -> File:
+    def create_file(self, base_dir: File, file_name: str, tmp_file_path: str) -> File:
         file_path = path.join(base_dir.file_path, file_name)
-        tmp_file_path = path.join(base_dir.file_path, file_name + '.lock')
-        try:
-            with open(tmp_file_path, 'wb+') as fh:
-                downloader(fh)
-            rename(tmp_file_path, file_path)
-            return LocalFile(file_path, False)
-        except Exception:
-            if path.exists(tmp_file_path):
-                remove(tmp_file_path)
-            raise ApplicationException('Unable to create file at {}'.format(file_path))
+        if not path.isfile(file_path) or not path.samefile(file_path, tmp_file_path):
+            move(tmp_file_path, file_path)
+        return LocalFile(file_path, False)
 
     def create_directory(self, base_dir: File, dir_name: str) -> File:
         dir_path = path.join(base_dir.file_path, dir_name)
