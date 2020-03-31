@@ -11,6 +11,9 @@ from sync.filesystem_factory import FilesystemFactory
 class DirSyncService:
     filesystem_factories: List[Type[FilesystemFactory]] = []
 
+    def __init__(self):
+        self.filesystem_factories = []
+
     def run(self, args: Dict):
         if args['src_type'] == args['dst_type']:
             raise ApplicationException('Destination type (--dst-type) must not same as source type (--src-type).')

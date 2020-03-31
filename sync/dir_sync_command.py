@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
+from typing import List
 
 import sync
-from sync.application_exception import ApplicationException
 from sync.dir_sync_service import DirSyncService
 from sync.google_drive.google_drive_filesystem_factory import GoogleDriveFilesystemFactory
 from sync.local.local_filesystem_factory import LocalFilesystemFactory
@@ -13,7 +13,7 @@ class DirSyncCommand:
     def __init__(self, dir_sync_service: DirSyncService):
         self.dir_sync_service = dir_sync_service
 
-    def handle(self):
+    def handle(self, argv: List[str]):
         self.dir_sync_service.register_filesystem_factories(LocalFilesystemFactory)
         self.dir_sync_service.register_filesystem_factories(GoogleDriveFilesystemFactory)
 
@@ -32,6 +32,6 @@ class DirSyncCommand:
         parser.add_argument('--dst', required=True,
                             help='Destination directory path. The value depends on the source type.')
         parser.add_argument('--auth-key-file', required=True, help='Path to auth key file.')
-        args = vars(parser.parse_args())
+        args = vars(parser.parse_args(argv))
 
         self.dir_sync_service.run(args)

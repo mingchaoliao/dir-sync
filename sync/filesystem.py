@@ -1,9 +1,7 @@
 import random
 import string
 from abc import ABC, abstractmethod
-from typing import Callable
-
-from typing.io import BinaryIO
+from typing import Callable, BinaryIO
 
 from sync.file import File
 from sync.file_collection import FileCollection
@@ -16,7 +14,7 @@ class ListFileResponse(ABC):
         self.is_recursive = is_recursive
 
     @abstractmethod
-    def next(self) -> FileCollection or None:
+    def next(self) -> FileCollection or None:  # pragma: no cover
         pass
 
     def get_all(self) -> FileCollection:
@@ -31,32 +29,32 @@ class ListFileResponse(ABC):
 
 class Filesystem(ABC):
     @abstractmethod
-    def list_files(self, file_id: str, is_recursive: bool = False) -> ListFileResponse:
+    def list_files(self, file_id: str, is_recursive: bool = False) -> ListFileResponse:  # pragma: no cover
         pass
 
     @abstractmethod
-    def read_file(self, file_id: str) -> str:
+    def read_file(self, file_id: str) -> str:  # pragma: no cover
         pass
 
     @abstractmethod
-    def create_file(self, base_dir: File, file_name: str, tmp_file_path: str) -> File:
+    def create_file(self, base_dir: File, file_name: str, tmp_file_path: str) -> File:  # pragma: no cover
         pass
 
     @abstractmethod
-    def create_directory(self, base_dir: File, dir_name: str) -> File:
+    def create_directory(self, base_dir: File, dir_name: str) -> File:  # pragma: no cover
         pass
 
     @abstractmethod
-    def delete_file(self, file_id: str) -> None:
+    def delete_file(self, file_id: str) -> None:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_root_dir(self, dir_path: str) -> File:
+    def get_root_dir(self, dir_path: str) -> File:  # pragma: no cover
         pass
 
     @staticmethod
     @abstractmethod
-    def get_filesystem_name() -> str:
+    def get_filesystem_name() -> str:  # pragma: no cover
         pass
 
     def create_tmp_file(self, downloader: Callable[[BinaryIO], None]) -> str:

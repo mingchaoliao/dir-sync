@@ -18,4 +18,3 @@ class GoogleDriveFile(File):
 
     def get_relative_path(self, base_path: str) -> str:
         return self.file_path
-

@@ -6,3 +6,5 @@ tmp/
 dist/
 build/
 .pytest_cache/
+.coverage
+tests/coverage/

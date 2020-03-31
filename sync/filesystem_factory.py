@@ -4,7 +4,7 @@ from typing import Dict
 from sync.filesystem import Filesystem
 
 
-class FilesystemFactory(ABC):
+class FilesystemFactory(ABC):  # pragma: no cover
     @staticmethod
     @abstractmethod
     def create(args: Dict) -> Filesystem:

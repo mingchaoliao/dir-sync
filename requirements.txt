@@ -5,3 +5,5 @@ pytest
 pytest-mock
 twine
 pypandoc
+pytest-cov
+testfixtures

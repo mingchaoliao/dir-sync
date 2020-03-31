@@ -12,7 +12,7 @@ class File(ABC):
         self.file_name = file_name
 
     @abstractmethod
-    def get_md5_checksum(self) -> str:
+    def get_md5_checksum(self) -> str:  # pragma: no cover
         """Get md5 checksum of the file.
 
           Returns:
@@ -21,9 +21,9 @@ class File(ABC):
         pass
 
     @abstractmethod
-    def is_dir(self) -> bool:
+    def is_dir(self) -> bool:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_relative_path(self, base_path: str) -> str:
+    def get_relative_path(self, base_path: str) -> str:  # pragma: no cover
         pass

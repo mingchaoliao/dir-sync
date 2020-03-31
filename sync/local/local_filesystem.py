@@ -1,8 +1,9 @@
-from os import path, mkdir, rename, remove, rmdir
+from os import path, mkdir, remove
+from shutil import rmtree
+from shutil import move
 
 from sync.file import File
 from sync.filesystem import Filesystem
-from shutil import move
 from sync.local.local_file import LocalFile
 from sync.local.local_list_file_response import LocalListFileResponse
 
@@ -31,7 +32,7 @@ class LocalFilesystem(Filesystem):
 
     def delete_file(self, file_id: str) -> None:
         if path.isdir(file_id):
-            rmdir(file_id)
+            rmtree(file_id)
         elif path.isfile(file_id):
             remove(file_id)
 

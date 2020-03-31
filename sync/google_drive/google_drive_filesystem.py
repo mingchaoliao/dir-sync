@@ -1,9 +1,10 @@
 from os import path
 
+from googleapiclient import discovery, http
 from google.oauth2 import service_account
-from googleapiclient.discovery import Resource, build
-from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
-from typing.io import BinaryIO
+from googleapiclient.discovery import Resource
+from googleapiclient.http import MediaIoBaseDownload
+from typing import BinaryIO
 
 from sync.file import File
 from sync.filesystem import ListFileResponse, Filesystem
@@ -33,7 +34,7 @@ class GoogleDriveFilesystem(Filesystem):
             A Google Drive Service authenticated from the service account key file.
         """
         credentials = service_account.Credentials.from_service_account_file(service_account_key_file)
-        google_drive_service = build('drive', 'v3', credentials=credentials)
+        google_drive_service = discovery.build('drive', 'v3', credentials=credentials)
         return GoogleDriveFilesystem(google_drive_service)
 
     def list_files(self, file_id: str, is_recursive: bool = False) -> ListFileResponse:
@@ -57,7 +58,7 @@ class GoogleDriveFilesystem(Filesystem):
 
         res = self.drive_service.files().create(
             body=file_metadata,
-            media_body=MediaFileUpload(tmp_file_path, resumable=True),
+            media_body=http.MediaFileUpload(tmp_file_path, resumable=True),
             fields='id, mimeType, md5Checksum'
         ).execute()
 

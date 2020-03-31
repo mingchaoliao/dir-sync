@@ -18,14 +18,6 @@ class FileCollection:
     def push(self, file: File):
         self.files.append(file)
 
-    def has_file(self, file_id: str, md5_checksum: str) -> bool:
-        for file in self.files:
-            if file.file_id == file_id:
-                if file.get_md5_checksum() == md5_checksum:
-                    return True
-                return False
-        return False
-
     def to_dict_by_file_name(self) -> Dict[str, File]:
         d: Dict[str, File] = {}
         for file in self.files:
